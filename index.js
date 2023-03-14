@@ -1,3 +1,6 @@
+const platformImg = "./img/platform.png";
+const backgroundImg = "./img/background.png";
+const hillsImg = "./img/hills.png";
 const canvas = document.querySelector("canvas");
 const context = canvas.getContext("2d");
 const gravity = 0.5;
@@ -8,8 +11,16 @@ const movementRange = {
 };
 let scrollOffset = 0;
 const scrollRate = 5;
-canvas.width = window.innerWidth;
-canvas.height = window.innerHeight;
+canvas.width = 1024;
+canvas.height = 576;
+
+// FUNCTIONS
+
+function createImage(imgSrc) {
+	const image = new Image();
+	image.src = imgSrc;
+	return image;
+}
 ////////////// CLASSES
 class Player {
 	constructor() {
@@ -43,25 +54,46 @@ class Player {
 }
 
 class Platform {
-	constructor({ x, y }) {
+	constructor({ x, y, image }) {
 		this.position = {
 			x,
 			y,
 		};
-		this.width = 200;
-		this.height = 20;
+		this.image = image;
+		this.width = image.width;
+		this.height = image.height;
 	}
 
 	draw() {
-		context.fillStyle = "blue";
-		context.fillRect(this.position.x, this.position.y, this.width, this.height);
+		context.drawImage(this.image, this.position.x, this.position.y);
+	}
+}
+
+class GenericObject {
+	constructor({ x, y, image }) {
+		this.position = {
+			x,
+			y,
+		};
+		this.image = image;
+		this.width = image.width;
+		this.height = image.height;
+	}
+
+	draw() {
+		context.drawImage(this.image, this.position.x, this.position.y);
 	}
 }
 //////////////////////// INIT
 const player = new Player();
+const platformImage = createImage(platformImg);
 const platforms = [
-	new Platform({ x: 300, y: 600 }),
-	new Platform({ x: 600, y: 400 }),
+	new Platform({ x: 0, y: 470, image: platformImage }),
+	new Platform({ x: platformImage.width - 2, y: 470, image: platformImage }),
+];
+const genericObjects = [
+	new GenericObject({ x: -1, y: -1, image: createImage(backgroundImg) }),
+	new GenericObject({ x: 0, y: 0, image: createImage(hillsImg) }),
 ];
 
 const keys = {
@@ -76,7 +108,11 @@ const keys = {
 ///////////////////////////////////////////////
 function animate() {
 	requestAnimationFrame(animate);
-	context.clearRect(0, 0, canvas.width, canvas.height);
+	context.fillStyle = "white";
+	context.fillRect(0, 0, canvas.width, canvas.height);
+	genericObjects.forEach((genericObject) => {
+		genericObject.draw();
+	});
 	platforms.forEach((platform) => {
 		platform.draw();
 	});
@@ -92,10 +128,16 @@ function animate() {
 			platforms.forEach((platform) => {
 				platform.position.x -= velocityRate.x;
 			});
+			genericObjects.forEach((genericObject) => {
+				genericObject.position.x -= 3;
+			});
 		} else if (keys.left.pressed) {
 			scrollOffset -= scrollRate;
 			platforms.forEach((platform) => {
 				platform.position.x += velocityRate.x;
+			});
+			genericObjects.forEach((genericObject) => {
+				genericObject.position.x += 3;
 			});
 		}
 	}
