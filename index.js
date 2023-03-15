@@ -5,108 +5,7 @@ const spriteStandRight = "./img/stand-right.png";
 const spriteRunRight = "./img/spriteRunRight.png";
 const platformSmallTall = "./img/platformSmallTall.png";
 const run = "./img/run-2.png";
-const canvas = document.querySelector("canvas");
-const context = canvas.getContext("2d");
-const gravity = 0.5;
-const movementRange = {
-	left: 10,
-	right: 500,
-};
-const scrollRate = 5;
-canvas.width = 1024;
-canvas.height = 576;
 
-// FUNCTIONS
-
-function createImage(imgSrc) {
-	const image = new Image();
-	image.src = imgSrc;
-	return image;
-}
-////////////// CLASSES
-class Player {
-	constructor() {
-		this.speed = 10;
-		this.jump = 15;
-		this.position = {
-			x: 100,
-			y: 100,
-		};
-		this.height = 120;
-		this.width = 120;
-		this.velocity = {
-			x: 0,
-			y: 1,
-		};
-		this.sprites = {};
-		this.currentSprite = createImage(run);
-		this.currentCropWidth = 120;
-		this.frames = 0;
-	}
-
-	draw() {
-		// context.fillStyle = "red";
-		// context.fillRect(this.position.x, this.position.y, this.width, this.height);
-		context.drawImage(
-			this.currentSprite,
-			this.currentCropWidth * this.frames,
-			0,
-			this.currentCropWidth,
-			120,
-			this.position.x,
-			this.position.y,
-			this.width,
-			this.height
-		);
-	}
-
-	update() {
-		this.frames++;
-		if (this.frames > 14) {
-			this.frames = 1;
-		}
-		this.draw();
-		this.position.x += this.velocity.x;
-		this.position.y += this.velocity.y;
-		if (this.height + this.position.y + this.velocity.y <= canvas.height) {
-			this.velocity.y += gravity;
-		} else {
-			// this.velocity.y = 0;
-		}
-	}
-}
-
-class Platform {
-	constructor({ x, y, image }) {
-		this.position = {
-			x,
-			y,
-		};
-		this.image = image;
-		this.width = image.width;
-		this.height = image.height;
-	}
-
-	draw() {
-		context.drawImage(this.image, this.position.x, this.position.y);
-	}
-}
-
-class GenericObject {
-	constructor({ x, y, image }) {
-		this.position = {
-			x,
-			y,
-		};
-		this.image = image;
-		this.width = image.width;
-		this.height = image.height;
-	}
-
-	draw() {
-		context.drawImage(this.image, this.position.x, this.position.y);
-	}
-}
 //////////////////////// INIT
 let scrollOffset = 0;
 let player = new Player();
@@ -150,6 +49,9 @@ const keys = {
 	left: {
 		pressed: false,
 	},
+	shoot: {
+		pressed: false,
+	},
 };
 
 ///////////////////////////////////////////////
@@ -164,11 +66,14 @@ function animate() {
 		platform.draw();
 	});
 	player.update();
+	if (keys.shoot.pressed) {
+		player.shoot();
+	}
 	if (keys.right.pressed && player.position.x <= movementRange.right) {
 		player.velocity.x = player.speed;
 	} else if (
 		(keys.left.pressed && player.position.x >= movementRange.left) ||
-		(keys.left.pressed && scrollOffset > 0 && player.position.x > 0)
+		(keys.left.pressed && scrollOffset === 0 && player.position.x > 0)
 	) {
 		player.velocity.x = player.speed * -1;
 	} else {
@@ -222,40 +127,46 @@ animate();
 addEventListener("keydown", ({ key }) => {
 	switch (key.toLowerCase()) {
 		case "a":
-			console.log("left");
+			// left
 			keys.left.pressed = true;
 			break;
 		case "s":
-			console.log("down");
+			// down
 			break;
 		case "d":
-			console.log("right");
+			// right
 			keys.right.pressed = true;
 			break;
 		case "w":
-			console.log("up");
-			if (player.position.y > 0) {
+			// up
+			if (player.velocity.y == 0) {
 				player.velocity.y -= player.jump;
 			}
 			break;
+		case "q":
+			keys.shoot.pressed = true;
+		// shoot
 	}
 });
 
 addEventListener("keyup", ({ key }) => {
 	switch (key.toLowerCase()) {
 		case "a":
-			console.log("left");
+			// left
 			keys.left.pressed = false;
 			break;
 		case "s":
-			console.log("down");
+			// down
 			break;
 		case "d":
-			console.log("right");
+			// right
 			keys.right.pressed = false;
 			break;
 		case "w":
-			console.log("up");
+			// up
 			break;
+		case "q":
+			// shoot
+			keys.shoot.pressed = false;
 	}
 });
