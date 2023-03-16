@@ -24,6 +24,7 @@ class Player {
 		this.currentCropWidth = 120;
 		this.frames = 0;
 		this.coins = 0;
+		this.lives = 3;
 	}
 
 	draw() {

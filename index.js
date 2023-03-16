@@ -5,6 +5,7 @@ const spriteStandRight = "./img/stand-right.png";
 const spriteRunRight = "./img/spriteRunRight.png";
 const platformSmallTall = "./img/platformSmallTall.png";
 const run = "./img/run-2.png";
+const heartImg = "./img/heart.png";
 
 //////////////////////// INIT
 let scrollOffset = 0;
@@ -21,7 +22,7 @@ let coins = [...Array(10).keys()].map((id) => {
 });
 function init() {
 	scrollOffset = 0;
-	player = new Player();
+	player.position = { x: 100, y: 100 };
 	platformImage = createImage(platformImg);
 	coins.forEach((coin) => {
 		coin.position = { ...coin.originalPosition };
@@ -86,6 +87,15 @@ function animate() {
 		originalPosition: { x: 905, y: 35 },
 	});
 	c.draw();
+	context.fillStyle = "white";
+	context.font = "40px serif";
+	context.fillText(`${player.lives}`, 150, 70);
+	const heart = new GenericObject({
+		x: 55,
+		y: 25,
+		image: createImage(heartImg),
+	});
+	heart.draw();
 	// move player & parallax
 	if (keys.right.pressed && player.position.x <= movementRange.right) {
 		player.velocity.x = player.speed;
@@ -151,6 +161,12 @@ function animate() {
 	// lose condition
 	if (player.position.y > canvas.height) {
 		// reset
+		if (player.lives === 0) {
+			alert("gameOver");
+			player = new Player();
+		} else {
+			player.lives -= 1;
+		}
 		init();
 	}
 }
