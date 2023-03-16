@@ -1,4 +1,4 @@
-const run = "./img/run-2.png";
+const run = "./img/run-4.png";
 
 class Player {
 	constructor() {
@@ -8,21 +8,22 @@ class Player {
 			x: 100,
 			y: 100,
 		};
-		this.height = 120;
+		this.height = 135;
 		this.width = 120;
 		this.velocity = {
 			x: 0,
 			y: 1,
 		};
-		this.sprites = {};
+		this.sprites = {
+			run: {
+				left: 0,
+				right: 0,
+			},
+		};
 		this.currentSprite = createImage(run);
 		this.currentCropWidth = 120;
 		this.frames = 0;
-	}
-
-	shoot() {
-		const prj = new Projectile({ x: this.x, y: this.y });
-		prj.update();
+		this.coins = 0;
 	}
 
 	draw() {
@@ -33,7 +34,7 @@ class Player {
 			this.currentCropWidth * this.frames,
 			0,
 			this.currentCropWidth,
-			120,
+			140,
 			this.position.x,
 			this.position.y,
 			this.width,

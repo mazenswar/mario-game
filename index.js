@@ -12,11 +12,20 @@ let player = new Player();
 let platformImage = createImage(platformImg);
 let platforms = [];
 let genericObjects = [];
-
+let coins = [...Array(10).keys()].map((id) => {
+	return new Coin({
+		id,
+		position: { x: 300 * (id + 1), y: 300 },
+		originalPosition: { x: 300 * (id + 1), y: 300 },
+	});
+});
 function init() {
 	scrollOffset = 0;
 	player = new Player();
 	platformImage = createImage(platformImg);
+	coins.forEach((coin) => {
+		coin.position = { ...coin.originalPosition };
+	});
 	platforms = [
 		new Platform({ x: 0, y: 470, image: platformImage }),
 		new Platform({ x: platformImage.width - 2, y: 470, image: platformImage }),
@@ -49,9 +58,6 @@ const keys = {
 	left: {
 		pressed: false,
 	},
-	shoot: {
-		pressed: false,
-	},
 };
 
 ///////////////////////////////////////////////
@@ -59,16 +65,28 @@ function animate() {
 	requestAnimationFrame(animate);
 	context.fillStyle = "white";
 	context.fillRect(0, 0, canvas.width, canvas.height);
+	// render objects
 	genericObjects.forEach((genericObject) => {
 		genericObject.draw();
 	});
 	platforms.forEach((platform) => {
 		platform.draw();
 	});
+	coins.forEach((coin) => {
+		coin.draw();
+	});
 	player.update();
-	if (keys.shoot.pressed) {
-		player.shoot();
-	}
+	// render stats
+	context.fillStyle = "white";
+	context.font = "40px serif";
+	context.fillText(`${player.coins}`, 950, 50);
+	const c = new Coin({
+		id: 0,
+		position: { x: 905, y: 40 },
+		originalPosition: { x: 905, y: 35 },
+	});
+	c.draw();
+	// move player & parallax
 	if (keys.right.pressed && player.position.x <= movementRange.right) {
 		player.velocity.x = player.speed;
 	} else if (
@@ -86,6 +104,9 @@ function animate() {
 			genericObjects.forEach((genericObject) => {
 				genericObject.position.x -= player.speed * 0.66;
 			});
+			coins.forEach((coin) => {
+				coin.position.x -= player.speed;
+			});
 		} else if (keys.left.pressed && scrollOffset > 0) {
 			scrollOffset -= scrollRate;
 			platforms.forEach((platform) => {
@@ -93,6 +114,9 @@ function animate() {
 			});
 			genericObjects.forEach((genericObject) => {
 				genericObject.position.x += player.speed * 0.66;
+			});
+			coins.forEach((coin) => {
+				coin.position.x += player.speed;
 			});
 		}
 	}
@@ -106,6 +130,18 @@ function animate() {
 			player.position.x <= platform.position.x + platform.width
 		) {
 			player.velocity.y = 0;
+		}
+	});
+	// coin collission detection
+	coins.forEach((coin) => {
+		if (
+			player.position.y + player.height >= coin.position.y &&
+			player.position.y <= coin.position.y + coin.radius &&
+			player.position.x + player.width >= coin.position.x &&
+			player.position.x <= coin.position.x + coin.radius
+		) {
+			player.coins += 1;
+			coins = coins.filter((c) => c.id !== coin.id);
 		}
 	});
 	// win condition
